@@ -1,0 +1,40 @@
+{% extends 'base.html' %}{% block content %}
+<div class="grid"><section class="panel primary-panel">
+<div class="panel__head"><h2>买家日结放款</h2><span>{{ state.release.status }} · {{ state.release.date }}</span></div>
+{% set cols=['buyer','name','credit_limit','carryover','reserved','released_due','occupied','headroom','released_count','held_count','status'] %}
+<div class="scroll"><table class="ledger"><thead><tr>{% for col in cols %}<th>{{ meta.labels.get(col,col) }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in state.release.buyers %}<tr data-buyer="{{ row.buyer }}">{% for col in cols %}<td tabindex="0" class="num">{{ row.get(col,'') }}</td>{% endfor %}</tr>{% else %}<tr><td>当前批次没有买家放款数据。</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="panel__bar"><label>样例 <select id="dataset"><option value="dirty" {% if state.source=='dirty' %}selected{% endif %}>现场脏批</option><option value="clean" {% if state.source=='clean' %}selected{% endif %}>核验清批</option><option value="legacy" {% if state.source=='legacy' %}selected{% endif %}>旧编码批</option><option value="release" {% if state.source=='release' %}selected{% endif %}>放款日结批</option></select></label><label>票号 <input id="filter" placeholder="筛选票号"></label></div>
+</section>
+<div class="stack">
+<div class="panel"><div class="panel__head"><h2>放款发布</h2><span id="release-state">{{ state.published_release and ('已发布 v' ~ state.published_release.version) or '未发布' }}</span></div>
+<div class="seal mono" id="release-key">{{ state.published_release and state.published_release.release_key[:32] or '—' }}</div>
+<div class="panel__bar"><button id="publish" class="btn primary" data-id="{{ state.manifest.run_id }}" data-revision="{{ state.revision }}">发布放款</button><button id="review" class="btn" data-id="{{ state.manifest.run_id }}">复核</button></div>
+<small>同批同结果重发复用旧版次，不重复占用信用；发布失败时旧版次仍在。</small></div>
+<section class="panel"><div class="panel__head"><h2>发布版次</h2><span>{{ state.release_history|length }} 版</span></div>
+{% set hcols=['version','release_key','published_at'] %}
+<div class="scroll"><table class="ledger"><thead><tr>{% for col in hcols %}<th>{{ col }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in state.release_history|reverse %}<tr><td class="num">{{ row.version }}</td><td class="mono" title="{{ row.release_key }}">{{ row.release_key[:16] }}</td><td class="mono">{{ row.published_at }}</td></tr>{% else %}<tr><td>尚未发布。</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="panel"><div class="panel__head"><h2>隔离原因</h2><span>{{ state.quarantine|length }} 行</span></div>{{ ledger(state.quarantine) }}</section>
+</div></div>
+
+<section class="panel log-panel"><div class="panel__head"><h2>按票放款明细</h2><span>{{ state.release.released_count }} 可释放 / {{ state.release.held_count }} 暂缓</span></div>
+{% set tcols=['buyer','ticket','status','adopted_version','candidate_version','amount','paid','due','reserve','reason','detail'] %}
+<div class="scroll"><table class="ledger"><thead><tr>{% for col in tcols %}<th>{{ meta.labels.get(col,col) }}</th>{% endfor %}</tr></thead><tbody>
+{% for buyer in state.release.buyers %}{% for row in buyer.released + buyer.held %}<tr><td>{{ row.buyer }}</td><td class="mono">{{ row.ticket }}</td><td>{{ row.status }}</td><td class="num">{{ row.adopted_version }}</td><td class="num">{{ row.candidate_version }}</td><td class="num">{{ row.amount }}</td><td class="num">{{ row.paid }}</td><td class="num">{{ row.due }}</td><td class="num">{{ row.reserve }}</td><td>{{ row.reason }}</td><td>{{ row.detail }}</td></tr>{% endfor %}{% else %}<tr><td>当前批次没有成交票。</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="panel log-panel"><div class="panel__head"><h2>前日未结票</h2><span>{{ state.release.buyers|map(attribute='carryover_rows')|map('length')|sum }} 张</span></div>
+<div class="scroll"><table class="ledger"><thead><tr><th>买家</th><th>票号</th><th>未结金额 CNY</th><th>来源</th></tr></thead><tbody>
+{% for buyer in state.release.buyers %}{% for row in buyer.carryover_rows %}<tr><td>{{ row.buyer }}</td><td class="mono">{{ row.ticket }}</td><td class="num">{{ row.amount }}</td><td>{{ row.source }}</td></tr>{% endfor %}{% else %}<tr><td>没有前日未结票。</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="panel log-panel"><div class="panel__head"><h2>更正证据与采用版本</h2><span>{{ state.release.evidence.notices|length }} 条通知</span></div>
+<div class="scroll"><table class="ledger"><thead><tr><th>票号</th><th>通知版本</th><th>状态</th><th>申报金额</th><th>来源</th><th>生效版本</th><th>生效金额</th></tr></thead><tbody>
+{% for notice in state.release.evidence.notices %}<tr><td class="mono">{{ notice.ticket }}</td><td class="num">{{ notice.version or '' }}</td><td>{{ notice.status }}</td><td class="num">{{ notice.reported_amount }}</td><td>{{ notice.source }}</td><td class="num">{{ (state.release.evidence.adopted_versions|selectattr('ticket','equalto',notice.ticket)|first|default({})).get('version','') }}</td><td class="num">{{ (state.release.evidence.adopted_versions|selectattr('ticket','equalto',notice.ticket)|first|default({})).get('amount','') }}</td></tr>{% else %}<tr><td>没有更正通知，全部按已核对成交放款。</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="panel log-panel"><div class="panel__head"><h2>采集日志</h2><span id="log-state">滚动中</span></div><div id="log-tail" class="log-tail">{% for row in state.quarantine %}<div><time>08:00:{{ '%02d'|format(loop.index) }}</time><span class="lamp warn"></span> WARN　行 {{ row.line }}　{{ row.code }}　{{ row.detail }}</div>{% endfor %}</div></section>
+{% endblock %}

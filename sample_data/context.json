@@ -6,9 +6,119 @@
     "auction",
     "correction",
     "reconcile",
+    "release",
     "archive"
   ],
   "market": "东港水产",
   "currency": "CNY",
-  "weight_unit": "kg"
+  "weight_unit": "kg",
+  "daily": {
+    "date": "2026-11-17",
+    "buyers": {
+      "B01": {
+        "name": "东港一号",
+        "credit_limit": "15000.00"
+      },
+      "B02": {
+        "name": "东港二号",
+        "credit_limit": "15000.00"
+      }
+    },
+    "ticket_buyer": {
+      "00001": "B01",
+      "00002": "B01",
+      "00003": "B01",
+      "00004": "B01",
+      "00005": "B01",
+      "00006": "B01",
+      "00007": "B01",
+      "00008": "B01",
+      "00009": "B01",
+      "00010": "B01",
+      "00011": "B01",
+      "00012": "B01",
+      "00013": "B02",
+      "00014": "B02",
+      "00015": "B02",
+      "00016": "B02",
+      "00017": "B02",
+      "00018": "B02",
+      "00019": "B02",
+      "00020": "B02"
+    },
+    "carryover": [
+      {
+        "buyer": "B02",
+        "ticket": "00900",
+        "amount": "2000.00",
+        "source": "前日未结"
+      }
+    ],
+    "release_datasets": {
+      "release": {
+        "date": "2026-11-17",
+        "buyers": {
+          "B01": {
+            "name": "东港一号",
+            "credit_limit": "6500.00"
+          },
+          "B02": {
+            "name": "东港二号",
+            "credit_limit": "5000.00"
+          },
+          "B03": {
+            "name": "东港三号",
+            "credit_limit": "5000.00"
+          }
+        },
+        "ticket_buyer": {
+          "01001": "B01",
+          "01002": "B01",
+          "01003": "B01",
+          "01004": "B02",
+          "01005": "B02",
+          "01006": "B03",
+          "01007": "B02",
+          "01008": "B01"
+        },
+        "carryover": [
+          {
+            "buyer": "B02",
+            "ticket": "00900",
+            "amount": "1200.00",
+            "source": "前日未结"
+          },
+          {
+            "buyer": "B03",
+            "ticket": "00999",
+            "amount": "6000.00",
+            "source": "前日未结"
+          }
+        ],
+        "corrections": [
+          {
+            "ticket": "01003",
+            "version": 1,
+            "status": "closed",
+            "reported_amount": "1285.35",
+            "source": "扣杂更正已闭合"
+          },
+          {
+            "ticket": "01004",
+            "version": 1,
+            "status": "closed",
+            "reported_amount": "1200.00",
+            "source": "扣杂更正金额不符"
+          },
+          {
+            "ticket": "01005",
+            "version": 1,
+            "status": "open",
+            "source": "扣杂更正金额未定",
+            "reported_amount": "1000.00"
+          }
+        ]
+      }
+    }
+  }
 }

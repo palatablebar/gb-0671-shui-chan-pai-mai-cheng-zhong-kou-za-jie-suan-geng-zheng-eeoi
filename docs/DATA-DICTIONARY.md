@@ -5,3 +5,9 @@
 每票第一版不填写 replaces。后续版本只能替代当前生效版，分支或缺基版整票阻断结算。已支付额为各版本中最大累计已付值，待付=最终应付−累计已付；负待付表示待收回。
 同编号同原值仅计一次；同编号不同原值全部隔离。空文件、全空行和仅表头分别报错。原始输入计数包括空行及重复表头，对账会分别解释。
 归档封存保存逐版证据、隔离原因和运行摘要，非支付执行系统。数据使用虚构编号，不连接实际支付渠道。
+
+## 日结放款输入
+
+`sample_data/context.json` 的 `daily` 提供结算日、买家信用额度（`credit_limit`）、票号到买家映射（`ticket_buyer`）、前日未结票（`carryover`）与更正通知（`corrections`，字段 `ticket`、`version`、`status` 为 `open`/`closed`、`reported_amount`）。`daily.release_datasets.release` 供“放款日结批”样例使用，运行器按样例名替换整份 `daily`。
+
+更正通知判定：`open` 一律暂缓；`closed` 必须带金额且等于当票生效金额，否则按未闭合或金额冲突暂缓；同一票多条 `closed` 金额不一致按金额冲突处理。金额统一两位小数，负数或非数值报 `BAD_CONTEXT`。
